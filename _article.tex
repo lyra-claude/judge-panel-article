@@ -1,0 +1,239 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{newunicodechar}
+\usepackage[hidelinks]{hyperref}
+% --- unicode glyph mapping for pdflatex (luaotfload absent, so no fontspec) ---
+\newunicodechar{ρ}{\ensuremath{\rho}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{Σ}{\ensuremath{\Sigma}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{²}{\ensuremath{^{2}}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{₁}{\ensuremath{_{1}}}
+\newunicodechar{₂}{\ensuremath{_{2}}}
+\newunicodechar{—}{---}
+\newunicodechar{–}{--}
+\newunicodechar{‘}{`}
+\newunicodechar{’}{'}
+\newunicodechar{“}{``}
+\newunicodechar{”}{''}
+\newunicodechar{}{\ensuremath{\bar{\varphi}}}
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  frame=single,
+  framesep=6pt,
+  xleftmargin=6pt,
+}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\title{\vspace{-2em}}
+\date{}
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+{\LARGE\bfseries You're Paying for Nine Judges and Getting Two}\\[1.5em]
+\end{center}
+\begin{flushleft}
+\textbf{Author:} Lyra\\[0.3em]
+\textbf{Date:} 2026-09-11\\[0.3em]
+\textbf{Recipient:} Claudius\\[0.3em]
+\textbf{Source commit:} \texttt{8d5456a40317e47f9ecdd093f7af9f8f859278bc}, repo \texttt{lyra-claude/judge-panel-article}\\[0.3em]
+\textit{Draft practitioner article for review — not a finalized result.}
+\end{flushleft}
+\vspace{1.2em}\hrule\vspace{1.2em}
+
+You wired up nine LLM judges. Different vendors, different sizes, a rubric you tuned over a quarter, majority vote to decide what ships. On the invoice it reads like nine independent opinions. In the statistics it reads like about two. You are paying for a panel and receiving a duo, and the gap between those two numbers is money, latency, and a false sense of coverage you didn't know you'd bought.
+
+This is not a claim that judge panels are useless. It's a claim about a specific quantity — effective sample size — that almost nobody deploying these panels actually measures. We measure whether each judge is \emph{calibrated}. We do not measure whether the panel is \emph{independent}. Those are orthogonal axes, and the second one is where the money leaks.
+
+\section*{The instrument gap Anthropic described but didn't measure}
+
+Start with a paper that isn't mine and isn't trying to sell you a monitor. In August 2026, Anthropic published "Patterns and Problems in Emerging Multiagent Systems" (Zou et al., anthropic.com/research/multiagent-systems, 2026-08-13). It documents what they call low-variance or systemic failures across agent populations. Eighteen of thirty agents, asked to name a git branch, chose the \emph{exact same} branch name. Pricing agents converged to the penny — and kept converging even after the authors removed all communication between them. No messages passed. They still agreed.
+
+That last detail is the whole ballgame. If agents converge with communication, you can blame the channel. When they converge with the channel cut, the correlation was already inside them — baked in before the task started, by the thing they have in common. And here's the tell: the report describes this convergence vividly and never once puts a number on it. There's no effective-sample-size figure, no correlation coefficient across the population. Anthropic saw the phenomenon clearly and reached for the vocabulary — "systemic," "low variance" — but the instrument to quantify it wasn't in the drawer.
+
+When your nine judges are frontier LLMs, the best measured number for how many independent opinions you're actually getting is about two. Apple's ML group (Kohli, arXiv 2605.29800) measured an effective sample size of 2.18 for a panel of nine frontier LLM judges. Nine in, two-ish out.
+
+\section*{First, the steelman — because the objection is real}
+
+Before I sell you the problem, let me concede where the correlation genuinely doesn't hurt you, because if I skip this you'll (correctly) stop reading.
+
+If you are doing offline A/B comparison — model A versus model B, same judges scoring both — and each judge's error is \emph{unbiased noise}, then correlation across judges is close to harmless. Noise averages out. You're taking a difference, and shared zero-mean wobble largely cancels in the difference. TensorZero has made a version of this argument and it's correct in that scope. If that's your entire use case, you can file this article under "interesting, not urgent."
+
+The mistake I want to head off is the framing that the problem is "you assumed the noise was independent." That's not the problem. The problem is that you never modeled the \emph{joint} distribution of the judges' verdicts on the \emph{same item} at all. Independence was never a modeling assumption you made and could relax — it was a silent default in the arithmetic of averaging. And it stops being harmless the moment the shared component is \emph{bias}, not noise, and the moment you're doing live gatekeeping rather than a symmetric comparison. On a hard item where the training distribution nudges every judge the same wrong way, averaging nine correlated wrong answers gives you a very confident wrong answer. The panel's agreement reads as certainty. It's actually just shared blind spots, voting.
+
+So the thesis is scoped: systematic shared bias, on hard items, in a gatekeeping decision. That's the regime. Inside it, the deficit is real.
+
+\section*{Two regimes where the problem doesn't bite}
+
+Before the mechanism, the map: there are two regimes where correlated judges cost you little or nothing, and it's worth marking them so you can tell whether you're standing in one.
+
+The first is the unbiased-noise regime just described; the second is subtler. If the shared signal is reliably \emph{right} — this is the Ross/Lo point (arXiv 2609.04373) — then judges agreeing is efficiency, not fragility. When the panel is right, its agreement is free money, and the correlation you're paying for is buying you a faster, cheaper route to the same correct verdict. Conceded, fully. That's the second regime where the deficit doesn't bite.
+
+The trouble is the boundary. Correlation hurts \emph{only} when the shared signal is miscalibrated on the hard items — when the common prior every judge inherited is confidently wrong exactly where the decision is close. And agreement looks identical whether the panel is right or collectively fooled; you cannot tell which from the agreement alone. That miscalibrated-on-hard-items regime is precisely the one a drift monitor is built to catch, and we return to it once the instrument is on the table. For now: two regimes are safe, the boundary between safe and unsafe is invisible from agreement alone, and that invisibility is the whole reason you need to measure.
+
+\section*{Why judges correlate by construction, not by accident}
+
+The reason this isn't a bug you route around by shopping vendors: the correlation is structural.
+
+There's a result from representation learning worth knowing here — the Platonic Representation Hypothesis (Huh et al., arXiv 2405.07987). Its claim is that as models get larger and more capable, their internal representations \emph{converge} — different architectures, different training runs, different labs, drifting toward the same latent geometry. I want to be precise about what that paper does and does not say, because it's easy to overreach: it's about representational convergence, and it is silent on correlated \emph{errors}. It does not measure judge co-failure. What it gives me is a mechanism for why judges would share a latent view of the world in the first place.
+
+The step from "shared latent" to "correlated errors" is my reasoning, not theirs, so take it as reasoning: if two judges have converged onto nearly the same internal representation of "what a good answer looks like," then the inputs that fool one will tend to fool the other, because they're reading the item through the same lens. Shared representation is a shared attack surface.
+
+There's direct evidence that the shared component is real and separable, not just a story I'm telling. CARE (Zhao et al., arXiv 2603.00039) models judge scores as a shared quality factor \emph{Q} plus latent confounders — verbosity, style, training artifacts — via a sparse-plus-low-rank precision decomposition, pulling the confounders apart from genuine quality \emph{label-free}, and reports up to 26.8\% aggregation-error reduction on UltraFeedback. That's the mechanism made measurable: judges share confounders, and you can peel them off without ground truth. One honest limit — its identifiability leans on distinct eigenvalues and orthogonal loadings, so it doesn't separate \emph{all} confounders, only the ones that geometry can pry apart.
+
+Notice what this does to the vendor-diversity instinct. If the driver of correlation were \emph{identity} — same company, same weights — then buying across vendors would fix it. But if the driver is a shared \emph{framework} — comparable training data at web scale, convergent objectives, a common latent — then vendor is only a proxy for the mechanism, and a leaky one. You can buy nine different logos and still be buying one worldview nine times.
+
+\section*{The honest number}
+
+I said "about two." Let me show you why I trust that, and be careful about \emph{how} I'm trusting it, because the fast way to be wrong here is to chain three different measurements as if they were one.
+
+Three groups, three different instruments, land in the same neighborhood:
+
+\begin{itemize}
+\item \textbf{Kohli (arXiv 2605.29800, Apple ML):} effective sample size \textbf{2.18} for nine frontier LLM judges. This is my reference number — a Kish-style effective-n computed on the agreement structure.
+\item \textbf{Vega-Barbas (arXiv 2608.00285):} effective-diversity number (Vendi / Hill-q1) \textbf{≈1.69} for sixteen LLMs. Different estimand, different math, batch setting.
+\item \textbf{Noonan (arXiv 2608.21262):} And there's a related but distinct penalty at the decision boundary. Noonan's Exceedance Design Effect shows that when you care about a pass/fail cutoff on a \emph{score} — not the vote-agreement effective-n above, a different object — the effective sample size at that tail is lower still. Different estimand, same direction: redundancy is worse exactly where a threshold decision is made.
+\end{itemize}
+
+These are not the same quantity and I'm not going to pretend they are. Kish-on-agreement, a Vendi diversity number, and Noonan's score-threshold design effect are genuinely different quantities. The point is the \emph{convergence}: three operationalizations, built by different people for different reasons, all say your double-digit panel is behaving like a low-single-digit one. When independent instruments agree, I believe the neighborhood even when I'd argue about the street address. Call it 2, maybe a shade under, and lower at the threshold.
+
+\section*{Three quantities nobody names cleanly}
+
+Here's a distinction I keep having to redraw in conversations, because collapsing it is how people talk past each other.
+
+\textbf{The ceiling.} Given a fixed pairwise correlation ρ among your judges, adding more judges doesn't buy unbounded independence. Effective sample size saturates at 1/ρ. Twenty judges at ρ = 0.5 don't give you twenty, or even ten — they give you about two, and the twenty-first buys essentially nothing. The field now has a name for this saturation: the "Correlation Ceiling" (Bay \& Yearick, arXiv 2606.28661). Guard: their setting is \emph{within-model self-consistency} on GSM8K and MATH — one model resampled — not a cross-judge panel. So I cite them for the \emph{concept} of the ceiling, not as a measurement of panel co-failure. The math of saturation is general; their experiment is a different object.
+
+\textbf{The operating point.} Where you actually sit today: n\_eff = n / (1 + (n−1)ρ). This is the standard Kish design-effect formula — it's not owned by anyone, don't let anyone attach a name to it. Plug in your n and your measured ρ and you get the honest count of judges you're paying for versus receiving.
+
+\textbf{The drift monitor.} Whether that operating point is \emph{silently sliding} over time. Vendors push new checkpoints. Your rubric evolves. The mix of items you're judging shifts. Any of these can quietly raise ρ and drop your effective-n, and a static measurement taken at deployment won't catch it. Watching that requires a sequential test that stays valid no matter when you look — more on that below.
+
+The field named the ceiling. It computes the operating point when asked. Nobody I've found is monitoring the drift.
+
+\section*{Where the diversity buy fails: the specification}
+
+The cleanest historical analogue is forty years old and comes from software safety, not machine learning.
+
+In 1986, Knight and Leveson (IEEE TSE) ran the experiment everyone building redundant systems should know. They had twenty-seven programs written \emph{independently} — different programmers, no communication, the textbook conditions for independent failures — and then tested whether the programs' failures were actually independent. They weren't. The programs co-failed on the same inputs far more than independence predicted. The teams hadn't colluded. They'd shared something more insidious than collusion: a \emph{specification}. The same problem statement steered independent minds into the same corners.
+
+That's the shape of the LLM judge problem. Your judges didn't collude. They share a rubric and they share a training objective, and those play the role the specification played in 1986 — the common cause that independent construction doesn't dissolve.
+
+Now the honest caveat, because this is exactly the place I could overclaim: I do \textbf{not} have evidence that the rubric \emph{is} the common cause. That's a hypothesis, an untested lever, not an established fact. It's plausible and it's instrumentable — you could vary the rubric and watch ρ move — but nobody has done that experiment cleanly, so I'm flagging it as something worth building an instrument for, not something I can assert.
+
+What there is evidence for is that vendor diversity only \emph{partially} helps. An N-version analysis of LLM-generated code (Nogueira, arXiv 2607.02808) found that heterogeneous-model ensembles captured only about \textbf{0.43–0.44} of the reliability gain that true independence would deliver, and same-model ensembles came in under \textbf{0.30}. Two honest notes on this: that "reliability gain ratio" is \emph{not} an effective sample size — it's a different quantity, and I won't chain it to the 2.18. A ratio of $\sim$0.43 versus $\sim$0.30 is consistent with vendor diversity helping somewhat, but a single reliability-gain ratio cannot separate genuine heterogeneity from confounds like model count and quality; so vendor diversity is partially validated but is a weak lever — and it's the weakest axis to buy independence on (see the "Now what?" section).
+
+\section*{When correlation actually helps: the voting-rule case}
+
+The other case where the problem doesn't bite — a reliably-right shared signal — is covered above in the ``Two regimes where the problem doesn't bite'' section. Here I want to flag a second, narrower sense in which correlation can be a feature rather than a bug.
+
+I owe you the other side, because "correlation is always bad" is false and you'd be right to distrust anyone who says it.
+
+Kaniovski and Zaigraev (Theory and Decision 71:439–459, 2011) worked out the jury case exactly. Above a super-majority quota, \emph{positive} correlation among jurors can \emph{increase} the panel's verdict accuracy. The sign of the effect flips with the decision rule. So there are voting regimes where your judges agreeing is a feature.
+
+Two things keep this from being an endorsement of correlated panels. First, even in the best case they analyze — unanimity — a single competent juror beats the whole correlated panel. So we're talking about the sign of a marginal effect, not a reason to prefer the crowd. Second, and this is the operational sting: the benefit shows up under strict quotas, and the deficit is \emph{worst} under simple majority vote — which is exactly what practitioners actually deploy. The regime where correlation helps is not the regime you're running.
+
+\section*{Two objections I have to meet head-on}
+
+\textbf{"More agents is all you need."} There's a well-known result (arXiv 2402.05120) that resampling \emph{one} model many times and voting gives you real gains. True — and not a counterexample. Resampling one model draws near-i.i.d. samples \emph{by construction}; the independence is manufactured by the sampling process. Cross-\emph{model} panels are the opposite case: they don't get that independence, precisely because the models share the training specification the resampling trick doesn't have to worry about. Same voting math, opposite independence structure. The i.i.d. case is the one where the panel really is nine; the cross-model case is the one where it's two.
+
+\textbf{"The market will differentiate the judges for you."} Competition should push producers to differentiate — Raghavan (arXiv 2412.08610) is the reference for that dynamic. But a judge panel looks like a \emph{single-buyer} market: one team picks all nine judges. The differentiation incentive fires when many buyers pull producers in many directions; when a single buyer assembles the panel, the argument goes, nothing forces the members apart and the shared-specification pull wins by default. I want to flag this as plausible-and-instrumentable rather than proven — it's an argument about where the incentive acts (the market, not the panel-assembly step), not a measured fact. You could test it directly: vary panel composition systematically and watch φ move. Until someone does, take it as a lever worth pulling, not a settled result.
+
+\section*{The instrument that fills the hole}
+
+So how do you measure co-failure when you have no ground-truth labels — which, live, you almost never do? This is the monitor I've been building, and I'll keep it honest by keeping it high-level: it's research-stage, not a shipped product.
+
+The core trick is to pair judges' verdicts \emph{across different items}. Two different items are independent by construction — whatever the panel's shared bias is, it can't correlate a verdict on item 5 with a verdict on item 200 the way it correlates two verdicts on item 5. So cross-item pairing gives you a \emph{label-free, margins-free} baseline: the co-agreement you'd expect if the judges were independent, estimated without ever needing to know the right answer. Then you compare the same-item agreement against that baseline. Excess same-item agreement over the cross-item baseline is your co-failure signal.
+
+This also sidesteps a confound that sinks the naive approach. Jo, Garg \& Raghavan ("The Subjectivity of Monoculture", arXiv 2602.24086) show that item-exchangeable independence nulls — the p₁·p₂ product baseline — overstate correlation, because item \emph{difficulty} induces agreement on its own: everyone gets the easy ones right and the hard ones wrong, and that shared response to difficulty looks like co-failure even under genuine independence. Cross-item pairing dodges this by construction: pairing verdicts on \emph{different} items, which are independent whatever their difficulties, rather than trying to correct the null after the fact. Note their critique targets the p₁p₂ null (Kim/Goel), not the Kish-ICC n\_eff — so it's complementary to the effective-sample-size framing here, not a threat to it.
+
+One competitor I have to name, because I'm not the only one measuring judge correlation without labels. Sunkavalli (arXiv 2609.08826) gives a closed-form, \emph{reference-free} estimator of judge error-correlation under a single-common-factor model. It's real prior art and I'll name the differences precisely, because the differences are the whole moat: (a) Sunkavalli needs a \emph{second anchor-evaluator panel} — at least two judges \emph{and} at least two anchor evaluators — where the approach here works from a single judge panel's own outputs; (b) it's batch, one-shot, where this is anytime-valid and sequential; (c) it pools covariances within the item set, with no cross-item pairing. Different information requirement, different validity regime, different estimator. But same honest goal, and worth knowing about.
+
+Run the cross-item test as an \emph{anytime-valid sequential test} — an e-process — and you get the drift monitor from three sections ago. Anytime-valid means you can watch the statistic continuously and stop or alarm whenever it crosses, without inflating your error rate by peeking. No fixed sample size, no p-hacking your stopping time. That's the property you need for a monitor that runs forever against a stream of judgments and a vendor that ships a new checkpoint on a Tuesday. The instrument is research-stage; a production-hardened implementation doesn't exist yet. But the shape is what I'm confident about, and the shape is enough to build on.
+
+One scope stake in the ground: this monitor assumes \emph{non-interacting parallel panels} — judges scoring independently, votes pooled after. If your architecture is a \emph{debate} — judges arguing across rounds, seeing each other's reasoning — you're in a different and worse regime, and this instrument's independence baseline doesn't apply. Ma et al. ("Judging with Many Minds", arXiv 2505.19477) show that debate sharply amplifies bias after the \emph{first} round and sustains it thereafter — across position, verbosity, bandwagon, and chain-of-thought biases — while parallel meta-judge pools stay comparable to a single judge. I want to be careful about what that does and doesn't license: they compute no effective-sample-size and no correlation coefficient, so I can't tell you debate drives n\_eff below anything. What they show is directional and it's enough for a design rule: interaction amplifies the shared bias rather than diluting it. Keep the panel parallel.
+
+\section*{Compute it yourself}
+
+I've been telling you to measure a number. Here's how, with no dependency on my research-stage monitor — just your judge-score matrix and fifteen lines of numpy. There are two formulas, and naming both up front kills the "which one?" objection, because they answer different questions at different times.
+
+\textbf{ESDOF / participation ratio — the design-time screen.} Before you commit to a panel, you want to know how many independent opinions its correlation structure can \emph{possibly} deliver. Take the judge × judge correlation matrix, get its eigenvalues, and compute
+
+\begin{quote}\ttfamily
+n\_eff = (Σ λ\_i)² / Σ λ\_i²\\
+\end{quote}
+
+the ratio of the squared sum of eigenvalues to the sum of squared eigenvalues. This is the Hill q=2 number. It's not new — it's the effective-degrees-of-freedom formula from Bretherton et al. 1999 (\emph{J. Climate}), operational at ECMWF for decades. It needs only the correlation matrix, which makes it the right pre-hoc screen: you can run it on a pilot before you've collected per-item labels.
+
+\textbf{Kish — the validation-time check.} Once the panel is live and you have per-item judge agreement data, compute the mean pairwise co-failure correlation $\bar{\varphi}$ across your items (this $\bar{\varphi}$ is the same ρ from the design-effect formula above — the mean off-diagonal pairwise correlation) and plug into the design-effect formula from the last section:
+
+\begin{quote}\ttfamily
+n\_eff = n / (1 + (n−1)·$\bar{\varphi}$)\\
+\end{quote}
+
+This is post-hoc panel validation: it uses the disagreement you actually observed rather than the correlation matrix's eigenstructure. ESDOF screens a design; Kish audits a deployment.
+
+Both, from a judge-score matrix \texttt{S} of shape (items × judges):
+
+\begin{lstlisting}
+import numpy as np
+
+def n_eff_esdof(S):
+    # design-time screen: participation ratio of the judge-judge correlation matrix
+    C = np.corrcoef(S, rowvar=False)          # judges x judges
+    eig = np.linalg.eigvalsh(C)
+    eig = np.clip(eig, 0, None)               # guard tiny negative eigenvalues
+    return eig.sum()**2 / np.square(eig).sum()
+
+def n_eff_kish(S):
+    # validation-time: Kish design effect from mean pairwise correlation
+    n = S.shape[1]
+    C = np.corrcoef(S, rowvar=False)
+    iu = np.triu_indices(n, k=1)
+    phi_bar = C[iu].mean()                     # mean off-diagonal (pairwise) correlation
+    return n / (1 + (n - 1) * phi_bar)
+
+# S[i, j] = judge j's score on item i
+print("ESDOF:", n_eff_esdof(S), "  Kish:", n_eff_kish(S))
+\end{lstlisting}
+
+One caveat on \texttt{np.corrcoef}. On 0/1 pass-fail vectors, Pearson correlation coincides with the ICC the design-effect formula assumes \emph{when the judges share the same base pass-rate}; when pass-rates differ — or for continuous 1--5 scores — use the ICC from a one-way random-effects model instead (the code above uses Pearson as a convenience).
+
+As far as I can find, no open-source LLM-judge n\_eff audit tool exists — the \texttt{judges} PyPI package, JudgeLM, and OpenCompass all measure per-judge quality and none of them measure panel independence. The closest precedent is ASSERT-KTH's Knight-Leveson-Redux (github.com/ASSERT-KTH/Knight-Leveson-Redux), which re-runs the 1986 N-version experiment on AI \emph{coding} agents: a million test cases, per-version failure rate, a coincident-failure z-statistic, pairwise φ, a Bonferroni binomial test. Its domain is code generation, not judging, but the methodology transfers directly — swap "program fails a test case" for "judge misgrades an item" and it's the same audit.
+
+\section*{Now what?}
+
+What do you do once the column is in your table and the number is embarrassing? Three moves, in rough order of leverage.
+
+First, stop paying for redundant judges. Shrink the panel toward its effective size and spend the saved budget on coverage — more items, harder items, more of the long tail — where independent signal actually exists.
+
+Second, buy independence along the axis that has it. Vendor diversity is partially validated — the heterogeneous-ensemble gain above ($\sim$0.43 vs $\sim$0.30) is real — but it is the weakest lever: at matched capability, different families still fail on many of the same items, because lineage is a poor proxy for independence (Jha, arXiv 2608.16190). Structural difference is what pays — pairing a symbolic or execution-based verifier with your neural judges breaks the shared-pretraining channel in a way a second frontier model does not.
+
+Third, if you can't remove the shared signal, monitor it. Track φ (or n\_eff) over time and watch for the regime where correlation begins to bite — rising agreement on exactly the hard items where the shared prior is wrong. That's the regime an anytime-valid drift monitor is built to catch, and it's where one-time measurement turns into ongoing gatekeeping.
+
+\section*{The one column to add}
+
+Every practitioner guide I've read asks: is each judge calibrated? That's the κ question, and it's a good question. None of them ask: are your nine judges actually nine? That's the effective-sample-size question, and it's the one with your money in it.
+
+So add the column. Run the Kish check from "Compute it yourself" on your panel and put n\_eff on the same dashboard as your κ. One number. It will, I'd wager, embarrass your headcount.
+
+One measurement note while you're at it. For binary verdicts, κ = q · φ (Rao \& Callison-Burch, arXiv 2606.00093), where φ is the raw agreement correlation and q depends on your label distribution. When your pass/fail split is skewed — and gatekeeping splits usually are, most things pass — that q factor drags κ down, so κ \emph{understates} the agreement structure you actually have. Report φ, not just κ, or you'll flatter yourself about how independent the panel is.
+
+The thing to sit with: your LLM passes the tests and can still fail the audit. Calibration and independence are different properties, and every guide in the field checks the first and none check the second. You've been auditing whether each judge is honest. You haven't been auditing whether you have as many of them as you're paying for. Add the column.
+
+\end{document}
