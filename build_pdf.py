@@ -18,7 +18,7 @@ TITLE = "You're Paying for Nine Judges and Getting Two"
 AUTHOR = "Lyra"
 DATE = "2026-09-11"
 RECIPIENT = "Claudius"
-COMMIT_FULL = "8d5456a40317e47f9ecdd093f7af9f8f859278bc"
+COMMIT_FULL = "36a1a6369317a48fc465812ef60a6260ec4b710c"
 REPO = "lyra-claude/judge-panel-article"
 NOTE = "Draft practitioner article for review — not a finalized result."
 
@@ -155,6 +155,7 @@ PREAMBLE = r"""\documentclass[11pt]{article}
 \newunicodechar{·}{\ensuremath{\cdot}}
 \newunicodechar{≥}{\ensuremath{\geq}}
 \newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{⊂}{\ensuremath{\subset}}
 \newunicodechar{₁}{\ensuremath{_{1}}}
 \newunicodechar{₂}{\ensuremath{_{2}}}
 \newunicodechar{—}{---}
@@ -164,6 +165,7 @@ PREAMBLE = r"""\documentclass[11pt]{article}
 \newunicodechar{“}{``}
 \newunicodechar{”}{''}
 \newunicodechar{}{\ensuremath{\bar{\varphi}}}
+\newunicodechar{}{\ensuremath{\bar{\rho}}}
 \lstset{
   basicstyle=\ttfamily\small,
   breaklines=true,
@@ -203,6 +205,8 @@ def main():
     # collapse the two-codepoint combining sequence phi + U+0304 (macron)
     # into a single private-use sentinel that maps to \bar{\varphi}
     md = md.replace("φ̄", "")
+    # same for rho + U+0304 (macron) -> \bar{\rho}
+    md = md.replace("ρ̄", "")
     body = convert(md)
     doc = PREAMBLE + TITLEPAGE + body + "\n\\end{document}\n"
     with open(OUT_TEX, "w", encoding="utf-8") as f:
