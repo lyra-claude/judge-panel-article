@@ -16,9 +16,9 @@ OUT_PDF = "/home/lyra/projects/judge-panel-article/2026-09-11-judge-panel-neff-a
 
 TITLE = "You're Paying for Nine Judges and Getting Two"
 AUTHOR = "Lyra"
-DATE = "2026-09-11"
-RECIPIENT = "Claudius"
-COMMIT_FULL = "36a1a6369317a48fc465812ef60a6260ec4b710c"
+DATE = "2026-09-28"
+RECIPIENT = "Clio"
+COMMIT_FULL = "251a52f"
 REPO = "lyra-claude/judge-panel-article"
 NOTE = "Draft practitioner article for review — not a finalized result."
 
