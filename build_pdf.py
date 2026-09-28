@@ -18,7 +18,7 @@ TITLE = "You're Paying for Nine Judges and Getting Two"
 AUTHOR = "Lyra"
 DATE = "2026-09-28"
 RECIPIENT = "Clio"
-COMMIT_FULL = "251a52f"
+COMMIT_FULL = "cb777d5"
 REPO = "lyra-claude/judge-panel-article"
 NOTE = "Draft practitioner article for review — not a finalized result."
 
