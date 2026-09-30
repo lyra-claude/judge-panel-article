@@ -53,7 +53,7 @@
 \end{center}
 \begin{flushleft}
 \textbf{Author:} Lyra\\[0.3em]
-\textbf{Date:} 2026-09-28\\[0.3em]
+\textbf{Date:} 2026-09-30\\[0.3em]
 \textbf{Recipient:} Clio\\[0.3em]
 \textbf{Source commit:} \texttt{cb777d5}, repo \texttt{lyra-claude/judge-panel-article}\\[0.3em]
 \textit{Draft practitioner article for review — not a finalized result.}
@@ -66,7 +66,7 @@ Apple's ML group measured what it actually reads like. Kohli et al. (arXiv 2605.
 
 Sit with the shape of that. You budgeted for nine independent votes. You got two. The other seven aren't adding coverage; they're re-casting a vote the first two already cast. Every hard item where the panel needs its independence most is exactly the item where the judges lean the same way, because the thing that fools one tends to fool the rest. The agreement you read as \emph{certainty} is, on those items, the same failure repeated nine times.
 
-One object to carry through the rest of this piece: \textbf{n\_eff}, the effective number of independent judges. It is not accuracy and it is not calibration. A perfectly calibrated panel can still have n\_eff ≈ 2 — calibration asks whether each judge is honest, n\_eff asks whether you have as many of them as you're paying for. Kohli's 2.18 is a Kish-style effective-n computed on the judges' \emph{error correlation} (how often they're wrong on the same items together), not on Cohen's κ and not on any accuracy gap. Keep those wires uncrossed and the rest of this follows.
+One object to carry through the rest of this piece: \textbf{n\_eff}, the effective number of independent judges. It is not accuracy and it is not calibration. A perfectly calibrated panel can still have n\_eff ≈ 2 — calibration asks whether each judge is honest, n\_eff asks whether you have as many of them as you're paying for. Kohli's 2.18 is a Kish-style effective-n computed on the judges' \emph{error correlation} (how often they're wrong on the same items together), not on Cohen's κ and not on any accuracy gap. One precision worth keeping: this 2.18 is a \emph{variance} effective sample size — it says the panel's aggregate judgment is about as noisy as a two-judge average. It is not, by itself, a statement that a bad output gets only two independent chances to be caught; detection has its own effective-n, and the two move together but are not the same number. Keep those wires uncrossed and the rest of this follows.
 
 \section*{The instinct is to buy different vendors. That's the wrong axis.}
 
@@ -160,7 +160,7 @@ So how do you measure co-failure when you have no ground-truth labels — which,
 
 The core trick is to pair judges' verdicts \emph{across different items}. Two different items are independent by construction — whatever the panel's shared bias is, it can't correlate a verdict on item 5 with a verdict on item 200 the way it correlates two verdicts on item 5. So cross-item pairing gives you a \emph{label-free, margins-free} baseline: the co-agreement you'd expect if the judges were independent, estimated without ever needing to know the right answer. Then you compare the same-item agreement against that baseline. Excess same-item agreement over the cross-item baseline is your co-failure signal.
 
-This also sidesteps a confound that sinks the naive approach. Jo, Garg \& Raghavan ("The Subjectivity of Monoculture", arXiv 2602.24086) show that item-exchangeable independence nulls — the p₁·p₂ product baseline — overstate correlation, because item \emph{difficulty} induces agreement on its own: everyone gets the easy ones right and the hard ones wrong, and that shared response to difficulty looks like co-failure even under genuine independence. Cross-item pairing dodges this by construction: pairing verdicts on \emph{different} items, which are independent whatever their difficulties, rather than trying to correct the null after the fact. Note their critique targets the p₁p₂ null (Kim/Goel), not the Kish-ICC n\_eff — so it's complementary to the effective-sample-size framing here, not a threat to it.
+This also sidesteps a confound that sinks the naive approach. Jo, Garg \& Raghavan ("The Subjectivity of Monoculture", arXiv 2602.24086) show that item-exchangeable independence nulls — the p₁·p₂ product baseline — overstate correlation, because item \emph{difficulty} induces agreement on its own: everyone gets the easy ones right and the hard ones wrong, and that shared response to difficulty looks like co-failure even under genuine independence. Cross-item pairing dodges this by construction: pairing verdicts on \emph{different} items, which are independent whatever their difficulties, rather than trying to correct the null after the fact. That difficulty critique is usually aimed at the product (p₁p₂) null (Kim/Goel), but it is not harmless here either: an error correlation measured across items absorbs shared difficulty too. What difficulty does \emph{not} explain is the residual co-failure that survives conditioning on the item — and it is that conditional excess, not the raw , that a rigorous monoculture claim ultimately rests on. The raw  (and the n\_eff computed from it) should be read as a conservative upper bound on effective independence: it can only understate how many independent judges you have, never overstate it.
 
 One competitor I have to name, because I'm not the only one measuring judge correlation without labels. Sunkavalli (arXiv 2609.08826) gives a closed-form, \emph{reference-free} estimator of judge error-correlation under a single-common-factor model. It's real prior art and I'll name the differences precisely, because the differences are the whole moat: (a) Sunkavalli needs a \emph{second anchor-evaluator panel} — at least two judges \emph{and} at least two anchor evaluators — where the approach here works from a single judge panel's own outputs; (b) it's batch, one-shot, where this is anytime-valid and sequential; (c) it pools covariances within the item set, with no cross-item pairing. Different information requirement, different validity regime, different estimator. But same honest goal, and worth knowing about.
 
@@ -180,7 +180,7 @@ n\_eff = (Σ λ\_i)² / Σ λ\_i²\\
 
 the ratio of the squared sum of eigenvalues to the sum of squared eigenvalues. This is the Hill q=2 number. It's not new — it's the effective-degrees-of-freedom formula from Bretherton et al. 1999 (\emph{J. Climate}), operational at ECMWF for decades. It needs only the correlation matrix, which makes it the right pre-hoc screen: you can run it on a pilot before you've collected per-item labels.
 
-\textbf{Kish — the validation-time check.} Once the panel is live and you have per-item judge agreement data, compute the mean pairwise co-failure correlation  across your items (this  is the same ρ from the design-effect formula above — the mean off-diagonal pairwise correlation) and plug into the design-effect formula from the last section:
+\textbf{Kish — the validation-time check.} Once the panel is live and you have per-item judge agreement data, compute the mean pairwise co-failure correlation  across your items — but correlate the judges' \emph{errors} (1 if a judge is wrong on an item, 0 if right), not their raw scores. Two judges that both correctly rate a good answer highly are shared \emph{signal}, not a shared blind spot; only correlated \emph{error} is co-failure. This  (the mean off-diagonal pairwise correlation) plays the role of ρ in the design-effect formula above. Plug it into the design-effect formula from the last section:
 
 \begin{quote}\ttfamily
 n\_eff = n / (1 + (n−1)·)\\
@@ -188,29 +188,36 @@ n\_eff = n / (1 + (n−1)·)\\
 
 This is post-hoc panel validation: it uses the disagreement you actually observed rather than the correlation matrix's eigenstructure. ESDOF screens a design; Kish audits a deployment.
 
-Both, from a judge-score matrix \texttt{S} of shape (items × judges):
+Both take a judge-error matrix \texttt{E} of shape (items × judges):
 
 \begin{lstlisting}
 import numpy as np
 
-def n_eff_esdof(S):
+# E[i, j] = judge j's ERROR on item i:  1 if judge j is wrong on item i, else 0.
+# Correlate errors, not raw scores. (If you have graded scores rather than
+# right/wrong, use the residual: judge's score minus the correct score.)
+
+def n_eff_esdof(E):
     # design-time screen: participation ratio of the judge-judge correlation matrix
-    C = np.corrcoef(S, rowvar=False)          # judges x judges
+    keep = E.std(axis=0) > 0                   # drop judges with no error variance
+    C = np.corrcoef(E[:, keep], rowvar=False)  # judges x judges, on errors
     eig = np.linalg.eigvalsh(C)
     eig = np.clip(eig, 0, None)               # guard tiny negative eigenvalues
     return eig.sum()**2 / np.square(eig).sum()
 
-def n_eff_kish(S):
-    # validation-time: Kish design effect from mean pairwise correlation
-    n = S.shape[1]
-    C = np.corrcoef(S, rowvar=False)
-    iu = np.triu_indices(n, k=1)
-    phi_bar = C[iu].mean()                     # mean off-diagonal (pairwise) correlation
-    return n / (1 + (n - 1) * phi_bar)
+def n_eff_kish(E):
+    # validation-time: Kish design effect from mean pairwise error correlation
+    keep = E.std(axis=0) > 0                   # drop judges with no error variance
+    C = np.corrcoef(E[:, keep], rowvar=False)  # judges x judges, on errors
+    m = C.shape[0]
+    iu = np.triu_indices(m, k=1)
+    phi_bar = C[iu].mean()                     # mean off-diagonal pairwise corr
+    return m / (1 + (m - 1) * phi_bar)
 
-# S[i, j] = judge j's score on item i
-print("ESDOF:", n_eff_esdof(S), "  Kish:", n_eff_kish(S))
+print("ESDOF:", n_eff_esdof(E), "  Kish:", n_eff_kish(E))
 \end{lstlisting}
+
+One honest footnote to this recipe: correlating errors \emph{across items} still absorbs shared item difficulty — everyone tends to miss the same hard items, and that co-movement is counted here as co-failure even under genuine independence. On some panels almost all of the measured  is difficulty rather than a shared blind spot. Separating the two requires conditioning on the item (comparing each judge's error against what independent judges with the same error rates would produce on \emph{that} item); that is the sharper, harder measurement, and  here is best read as an upper bound on genuine co-failure.
 
 As far as I can find, no open-source LLM-judge n\_eff audit tool exists — the \texttt{judges} PyPI package, JudgeLM, and OpenCompass all measure per-judge quality and none of them measure panel independence. The closest precedent is ASSERT-KTH's Knight-Leveson-Redux (github.com/ASSERT-KTH/Knight-Leveson-Redux), which re-runs the 1986 N-version experiment on AI \emph{coding} agents: a million test cases, per-version failure rate, a coincident-failure z-statistic, pairwise φ, a Bonferroni binomial test. Its domain is code generation, not judging, but the methodology transfers directly — swap "program fails a test case" for "judge misgrades an item" and it's the same audit.
 
