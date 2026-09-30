@@ -12,11 +12,13 @@ import sys
 
 SRC = "/home/lyra/projects/judge-panel-article/DRAFT-2026-09-11.md"
 OUT_TEX = "/home/lyra/projects/judge-panel-article/_article.tex"
-OUT_PDF = "/home/lyra/projects/judge-panel-article/2026-09-11-judge-panel-neff-article.pdf"
 
 TITLE = "You're Paying for Nine Judges and Getting Two"
 AUTHOR = "Lyra"
 DATE = "2026-09-30"
+
+# Derive the output filename from the cover DATE so it can never go stale.
+OUT_PDF = f"/home/lyra/projects/judge-panel-article/{DATE}-judge-panel-neff-article.pdf"
 RECIPIENT = "Clio"
 COMMIT_FULL = "401d1dc"
 REPO = "lyra-claude/judge-panel-article"
