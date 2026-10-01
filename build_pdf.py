@@ -13,7 +13,7 @@ import sys
 SRC = "/home/lyra/projects/judge-panel-article/DRAFT-2026-09-11.md"
 OUT_TEX = "/home/lyra/projects/judge-panel-article/_article.tex"
 
-TITLE = "You're Paying for Nine Judges and Getting Two"
+TITLE = "No Panel Size Buys You More Than Two Judges"
 AUTHOR = "Lyra"
 DATE = "2026-09-30"
 
@@ -150,6 +150,9 @@ PREAMBLE = r"""\documentclass[11pt]{article}
 \newunicodechar{κ}{\ensuremath{\kappa}}
 \newunicodechar{Σ}{\ensuremath{\Sigma}}
 \newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{τ}{\ensuremath{\tau}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{ω}{\ensuremath{\omega}}
 \newunicodechar{²}{\ensuremath{^{2}}}
 \newunicodechar{×}{\ensuremath{\times}}
 \newunicodechar{−}{\ensuremath{-}}
