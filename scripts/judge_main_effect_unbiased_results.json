@@ -1,0 +1,53 @@
+{
+  "alphanli": {
+    "n_items": 995,
+    "n_judges": 32,
+    "ms_items": 1.3392542440573088,
+    "ms_judges": 0.441173609985411,
+    "ms_resid": 0.044117888560084785,
+    "sigma2_item": 0.04047301110928825,
+    "sigma2_judge": 0.0003990509763068605,
+    "sigma2_resid": 0.044117888560084785,
+    "sigma2_judge_negative": false,
+    "sigma2_judge_truncated": 0.0003990509763068605,
+    "frac_judge_pct": 0.46952724795722023,
+    "var_judges_naive": 0.00042953460771192654,
+    "null_expected_colmean_var": 4.4339586492547524e-05,
+    "ratio_naive_to_null": 9.687384156911827,
+    "grand_mean": 0.09371859296482413
+  },
+  "snli": {
+    "n_items": 1000,
+    "n_judges": 32,
+    "ms_items": 2.1412049236736737,
+    "ms_judges": 1.36903125,
+    "ms_resid": 0.08759860768026095,
+    "sigma2_item": 0.06417519737479414,
+    "sigma2_judge": 0.001281432642319739,
+    "sigma2_resid": 0.08759860768026095,
+    "sigma2_judge_negative": false,
+    "sigma2_judge_truncated": 0.001281432642319739,
+    "frac_judge_pct": 0.837235407032214,
+    "var_judges_naive": 0.0013262490234375,
+    "null_expected_colmean_var": 8.759860768026095e-05,
+    "ratio_naive_to_null": 15.14006967186478,
+    "grand_mean": 0.18846875
+  },
+  "mnli_m": {
+    "n_items": 999,
+    "n_judges": 32,
+    "ms_items": 3.6400466724239267,
+    "ms_judges": 0.9531941215408956,
+    "ms_resid": 0.11353496451717089,
+    "sigma2_item": 0.11020349087208611,
+    "sigma2_judge": 0.000840499656680405,
+    "sigma2_resid": 0.11353496451717089,
+    "sigma2_judge_negative": false,
+    "sigma2_judge_truncated": 0.000840499656680405,
+    "frac_judge_pct": 0.37425575183947296,
+    "var_judges_naive": 0.0009243311363791217,
+    "null_expected_colmean_var": 0.00011364861313030119,
+    "ratio_naive_to_null": 8.133237273378349,
+    "grand_mean": 0.3401213713713714
+  }
+}
