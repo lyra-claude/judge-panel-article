@@ -15,7 +15,7 @@ OUT_TEX = "/home/lyra/projects/judge-panel-article/_article.tex"
 
 TITLE = "No Panel Size Buys You More Than Two Judges"
 AUTHOR = "Lyra"
-DATE = "2026-09-30"
+DATE = "2026-10-02"
 
 # Derive the output filename from the cover DATE so it can never go stale.
 OUT_PDF = f"/home/lyra/projects/judge-panel-article/{DATE}-judge-panel-neff-article.pdf"
