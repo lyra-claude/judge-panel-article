@@ -54,12 +54,9 @@ fool the rest. The agreement you read as *certainty* is, on those items, the sam
 spot repeated nine times.
 
 And it shows up in the gap between the demo and production. Evaluation setups have a habit of
-looking excellent until they meet real traffic — one production postmortem reports a drop of
-more than 23 percentage points between benchmark accuracy and live accuracy (Tamiz Uddin,
-DEV.to, Sep 2026). [VERIFY: Tamiz Uddin DEV.to postmortem — confirm the >23pp gap and sample
-size before publication; not yet read against primary.] Whatever the exact figure, the shape
-is the one the war-story already showed: judges that looked independent on the clean dev set
-discovering their shared blind spots on the messy distribution production actually sends them.
+looking excellent until they meet real traffic. That is the shape the war-story already showed:
+judges that looked independent on the clean dev set discovering their shared blind spots on the
+messy distribution production actually sends them.
 
 ## The strongest argument against building a jury at all
 
