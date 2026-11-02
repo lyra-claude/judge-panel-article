@@ -138,6 +138,7 @@ PREAMBLE = r"""\documentclass[11pt]{article}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
+\usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage[margin=1in]{geometry}
 \usepackage{xcolor}
@@ -163,6 +164,8 @@ PREAMBLE = r"""\documentclass[11pt]{article}
 \newunicodechar{⊂}{\ensuremath{\subset}}
 \newunicodechar{₁}{\ensuremath{_{1}}}
 \newunicodechar{₂}{\ensuremath{_{2}}}
+\newunicodechar{ₑ}{\ensuremath{_{e}}}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
 \newunicodechar{—}{---}
 \newunicodechar{–}{--}
 \newunicodechar{‘}{`}
@@ -229,10 +232,12 @@ def main():
             sys.stderr.write("PDFLATEX FAILED on run %d\n" % run)
             sys.stderr.write(r.stdout[-3000:])
             sys.exit(1)
-    # rename _article.pdf -> target
+    # move _article.pdf -> target (shutil.copy2 + os.remove is cross-device safe)
     import os
+    import shutil
     src_pdf = "/home/lyra/projects/judge-panel-article/_article.pdf"
-    os.replace(src_pdf, OUT_PDF)
+    shutil.copy2(src_pdf, OUT_PDF)
+    os.remove(src_pdf)
     print("OK", OUT_PDF)
 
 
