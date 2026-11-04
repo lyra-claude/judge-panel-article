@@ -312,6 +312,16 @@ Five judges. Two and a bit independent opinions. The twin pair alone erased almo
 
 The 2.17 here is pure arithmetic — it is what the formula returns on this fabricated five-judge table, chosen so the steps are checkable by hand. It is not Kohli's 2.18. That the two land a hundredth apart is coincidence: one is the output of a toy I built to show the mechanics, the other is a field measurement on a real nine-judge panel. The toy demonstrates how the number is computed; Kohli's 2.18 is independent evidence that real panels actually sit down there. Don't read the match as confirmation — read it as two unrelated things that happen to rhyme.
 
+**Which "2"? And why it's the optimistic number.**
+
+It's worth being precise about what "two effective votes" means, because there are two different effective-sample-size calculations hiding behind the same symbol, and they stop agreeing the moment your judges aren't all correlated to the same degree.
+
+The number I computed — n_eff = N / [1 + (N−1)·φ̄] with the *average* pairwise co-failure φ̄ — is exact for one specific quantity: the variance of the panel's *average* score. That's a theorem, not an approximation. When you average judges with equal weight, only the mean pairwise correlation enters the variance, so heterogeneity across judge pairs doesn't change the answer at all (Kish, *Survey Sampling*, 1965, §8.2).
+
+But "variance of the average" is the *friendliest* way to pose the question. If you instead ask how many *spectrally independent* judges you have — the participation-ratio count (Σλ)²/Σλ² of the correlation matrix, the same "effective number" used for portfolio diversification (Meucci, 2009) and for spatial degrees of freedom in climate fields — then heterogeneity works against you. Among all correlation matrices with a fixed *average* correlation, the one where every pair is *equally* correlated has the *most* spectral independence; any real panel, where some judge pairs run tighter than others, has less. (The one-liner: that count equals N² / (N + Σ ρ_ij²), and for a fixed mean the sum of squared correlations is smallest exactly when all the correlations are equal.)
+
+So "two effective votes" is the optimistic reading. Measure independence the way a risk model or a tail-failure analysis would — on a panel whose judges don't all resemble each other to the same degree — and you get *fewer*, not more. That cuts the opposite way from how these numbers usually get waved around: nobody is accidentally *under*-counting their independence.
+
 ### Why not κ
 
 Before moving to the real-data version: the natural instinct is to reach for Cohen's κ instead of φ. Here's exactly why that's wrong.
