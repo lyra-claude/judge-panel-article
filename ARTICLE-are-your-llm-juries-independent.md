@@ -103,16 +103,19 @@ doesn't do — what none of the guides, rubrics, or eval platforms do — is giv
 *estimator*: a number you can compute from your own judge scores that says how many
 independent judges you actually have.
 
-The arithmetic is almost embarrassingly small:
+The arithmetic is almost embarrassingly small. For a real panel of *n* judges, the estimator is the standard Kish design-effect formula:
 
-    n_eff = 1 / φ̄
+    n_eff = n / (1 + (n−1)·φ̄)
 
 where **φ̄** is the mean pairwise *between-judge* correlation — how often two judges are wrong
 on the same items, averaged over every pair. Agreement that reflects a shared blind spot
-counts against you; agreement on genuinely good answers does not. The moment you measure φ̄,
-the folklore becomes a reading on a gauge: orq.ai's "three judges, one verdict" stops being a
-cautionary metaphor and becomes a specific claim about a specific panel that you can confirm
-or refute.
+counts against you; agreement on genuinely good answers does not. We compute this by hand
+later in the piece. The quantity `1 / φ̄` is the *ceiling* — the n→∞ saturation limit: the
+most independent votes you could extract no matter how many judges you add. It is an upper
+bound on what any panel size can deliver, not the estimator for a finite panel. The moment
+you measure φ̄, the folklore becomes a reading on a gauge: orq.ai's "three judges, one
+verdict" stops being a cautionary metaphor and becomes a specific claim about a specific panel
+that you can confirm or refute.
 
 That is the object to carry through the rest of this piece: **n_eff**, the effective number of
 independent judges. It is not accuracy and it is not calibration. A perfectly calibrated panel
@@ -262,15 +265,15 @@ One honest caveat, because the gauge is not an oracle. n_eff is built from φ̄,
 
 ## The estimator that fills the hole
 
-So how do you measure co-failure when you have no ground-truth labels — which, live, you almost never do? This is the monitor I've been building, and I'll keep it honest by keeping it high-level: it's research-stage, not a shipped product.
+So how do you measure co-failure when you have no ground-truth labels — which, live, you almost never do? This is the monitor I've been building, and I'll keep it high-level: it's research-stage, not a shipped product.
 
 The core trick is to pair judges' verdicts *across different items*. Two different items are independent by construction — whatever the panel's shared bias is, it can't correlate a verdict on item 5 with a verdict on item 200 the way it correlates two verdicts on item 5. So cross-item pairing gives you a *label-free, margins-free* baseline: the co-agreement you'd expect if the judges were independent, estimated without ever needing to know the right answer. Then you compare the same-item agreement against that baseline. Excess same-item agreement over the cross-item baseline is your co-failure signal.
 
-This also sidesteps a confound that sinks the naive approach. Jo, Garg & Raghavan ("The Subjectivity of Monoculture", arXiv 2602.24086) show that item-exchangeable independence nulls — the p₁·p₂ product baseline — overstate correlation, because item *difficulty* induces agreement on its own: everyone gets the easy ones right and the hard ones wrong, and that shared response to difficulty looks like co-failure even under genuine independence. Cross-item pairing dodges this by construction: pairing verdicts on *different* items, which are independent whatever their difficulties, rather than trying to correct the null after the fact. That difficulty critique is usually aimed at the product (p₁p₂) null (Kim/Goel), but it is not harmless here either: an error correlation measured across items absorbs shared difficulty too. What difficulty does *not* explain is the residual co-failure that survives conditioning on the item — and it is that conditional excess, not the raw φ̄, that a rigorous monoculture claim ultimately rests on. As far as the difficulty confound is concerned, this cuts in the reassuring direction: difficulty *inflates* raw φ̄, so the n_eff computed from it understates how many independent judges you have rather than overstating it — the monoculture claim is conservative with respect to the difficulty objection, not manufactured by it. Which *kind* of effective-number you compute is a separate question, though, and there the arrow can reverse (see the worked example below).
+This also sidesteps a confound that sinks the naive approach. Jo, Garg & Raghavan ("The Subjectivity of Monoculture", arXiv 2602.24086) show that item-exchangeable independence nulls — the p₁·p₂ product baseline — overstate correlation, because item *difficulty* induces agreement on its own: everyone gets the easy ones right and the hard ones wrong, and that shared response to difficulty looks like co-failure even under genuine independence. The objection applies here too: an error correlation measured across items still absorbs shared difficulty, so the raw φ̄ isn't a clean measure of genuine co-failure. But the construction handles this in the safe direction: difficulty *inflates* raw φ̄, so the n_eff computed from it *understates* how many independent judges you have rather than overstating it — the monoculture claim is conservative with respect to the difficulty objection, not manufactured by it. The residual co-failure that survives conditioning on the item is what a rigorous monoculture claim ultimately rests on; the raw φ̄ is an upper bound on that, and the n_eff from it errs on the cautious side. Which *kind* of effective-number you compute is a separate question, though, and there the arrow can reverse (see the worked example below).
 
 One competitor I have to name, because I'm not the only one measuring judge correlation without labels. Sunkavalli (arXiv 2609.08826) gives a closed-form, *reference-free* estimator of judge error-correlation under a single-common-factor model. It's real prior art and I'll name the differences precisely, because the differences are the whole moat: (a) Sunkavalli needs a *second anchor-evaluator panel* — at least two judges *and* at least two anchor evaluators — where the approach here works from a single judge panel's own outputs; (b) it's batch, one-shot, where this is anytime-valid and sequential; (c) it pools covariances within the item set, with no cross-item pairing. Different information requirement, different validity regime, different estimator. But same honest goal, and worth knowing about.
 
-Run the cross-item test as an *anytime-valid sequential test* — an e-process — and you get the drift monitor from three sections ago. Anytime-valid means you can watch the statistic continuously and stop or alarm whenever it crosses, without inflating your error rate by peeking. No fixed sample size, no p-hacking your stopping time. That's the property you need for a monitor that runs forever against a stream of judgments and a vendor that ships a new checkpoint on a Tuesday. The instrument is research-stage; a production-hardened implementation doesn't exist yet. But the shape is what I'm confident about, and the shape is enough to build on.
+Run the cross-item test as an *anytime-valid sequential test* — an e-process — and you get the drift monitor from three sections ago. Anytime-valid means you can watch the statistic continuously and stop or alarm whenever it crosses, without inflating your error rate by peeking. No fixed sample size, no p-hacking your stopping time. That's the property you need for a monitor that runs forever against a stream of judgments and a vendor that ships a new checkpoint on a Tuesday. The shape is what I'm confident about, and the shape is enough to build on.
 
 One scope stake in the ground: this monitor assumes *non-interacting parallel panels* — judges scoring independently, votes pooled after. If your architecture is a *debate* — judges arguing across rounds, seeing each other's reasoning — you're in a different and worse regime, and this instrument's independence baseline doesn't apply. Ma et al. ("Judging with Many Minds", arXiv 2505.19477) show that debate sharply amplifies bias after the *first* round and sustains it thereafter — across position, verbosity, bandwagon, and chain-of-thought biases — while parallel meta-judge pools stay comparable to a single judge. I want to be careful about what that does and doesn't license: they compute no effective-sample-size and no correlation coefficient, so I can't tell you debate drives n_eff below anything. What they show is directional and it's enough for a design rule: interaction amplifies the shared bias rather than diluting it. Keep the panel parallel.
 
