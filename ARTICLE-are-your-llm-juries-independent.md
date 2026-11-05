@@ -58,6 +58,26 @@ looking excellent until they meet real traffic. That is the shape the war-story 
 judges that looked independent on the clean dev set discovering their shared blind spots on the
 messy distribution production actually sends them.
 
+### The obvious fix makes it worse
+
+Here's the reflex. Two effective votes out of nine feels like a reasoning deficit, so you reach
+for the fix every eval guide recommends: make the judges *think harder*. Add chain-of-thought,
+let each judge reason step by step before it scores. More deliberation, better judgment, surely
+more independence.
+
+Kohli ran exactly that condition. Same nine-judge panel, same dataset, the only change being a
+chain-of-thought prompt in place of the standard one. The effective sample size didn't go up. It
+went **down**, from 2.18 to **1.94** (φ̄ = .456). The paper states it flatly: "Chain-of-thought
+actually increases correlation." The intuitive fix bought you *less* independence, not more.
+
+And this is the one comparison you're allowed to make directly, because both numbers are the same
+thing measured the same way: Kish effective-n on the judges' error correlation, same panel, same
+items — the only moving part is the prompt. No estimand switch, no apples-to-oranges. Reasoning
+more didn't decorrelate the judges; it synchronized them. When you ask nine models from a shared
+lineage to reason through an item, they tend to reason through it *the same way* — the shared
+chain of thought is one more shared convention, and it pushes the co-failure up rather than down.
+The deliberation you added to buy independence is the deliberation that costs it.
+
 ## The strongest argument against building a jury at all
 
 Before we go further, we should hear the best case for *not* worrying about where the judges
