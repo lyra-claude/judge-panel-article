@@ -58,7 +58,7 @@ looking excellent until they meet real traffic. That is the shape the war-story 
 judges that looked independent on the clean dev set discovering their shared blind spots on the
 messy distribution production actually sends them.
 
-This isn't just the opening anecdote dressed up. The same week this piece went out, Han & Kim
+This isn't just the opening anecdote dressed up. In November 2026, Han & Kim
 (arXiv 2611.04090) put the war-story through a *preregistered* study — hypotheses, prompt,
 parser, and analysis code all hashed and frozen before any results were seen — re-judging 4,000
 Chatbot Arena battles with five judge models across Anthropic, OpenAI, and Google, in both
