@@ -58,6 +58,26 @@ looking excellent until they meet real traffic. That is the shape the war-story 
 judges that looked independent on the clean dev set discovering their shared blind spots on the
 messy distribution production actually sends them.
 
+This isn't just the opening anecdote dressed up. The same week this piece went out, Han & Kim
+(arXiv 2611.04090) put the war-story through a *preregistered* study — hypotheses, prompt,
+parser, and analysis code all hashed and frozen before any results were seen — re-judging 4,000
+Chatbot Arena battles with five judge models across Anthropic, OpenAI, and Google, in both
+response orders. Their registered hypothesis that system rankings survive a change of judge was
+*not* supported: Kendall's τ against the human ranking had a median of just 0.667 (range
+0.17–0.89), and verdict-level agreement with the human vote was low (median Cohen's κ = 0.22).
+Swap the judge, change the conclusion — exactly the failure the opening war-story staged, now
+with the frozen-protocol rigor that rules out fishing for it. Their sharpest finding cuts
+straight at the "add a judge for safety" reflex: the apparent precision gain from requiring two
+judges to agree (0.80 → 0.90) came *entirely* from filtering out one badly-aligned judge, not
+from any genuine independent corroboration — which is why they conclude "replication is better
+understood as a screen for an unreliable judge than as a substitute for human validation." That
+is this article's thesis arriving from an independent team, citing Kohli directly: consensus is
+the symptom, not the cure. (They also report judges disagreeing with the human vote together
+about 4.5× more than independence predicts — but they deliberately call this *co-occurring
+disagreement with the human vote*, not shared judge error, because the design cannot separate
+"the judges share a bias" from "the human aggregate is the outlier"; it is not Kohli's n_eff and
+I won't treat it as correlated-error evidence here.)
+
 ### The obvious fix makes it worse
 
 Here's the reflex. Two effective votes out of nine feels like a reasoning deficit, so you reach
@@ -111,6 +131,21 @@ prompt-level diversity has been found to beat model-level diversity, with model 
 landing somewhere between the best and worst member without a clear improvement (arXiv
 2507.21168). Diversity is a real cure. It's just usually bought on the one axis that happens
 to be free of it.
+
+And "decorrelate your panel" has *causal* backing, not just the correlational picture an
+eval-only study can offer. Aitchison et al. ("Diversity is the Strength of the AI Crowd",
+arXiv 2606.29661, Mantic Technologies) ran 113 binary forecasting questions from the Metaculus
+AI Forecasting Benchmark against *real-world ground truth* — the questions resolve, so the
+diversity-helps claim can actually be tested rather than merely observed. They find frontier
+LLMs forecast in lockstep, so extra predictions from similar models add little, while the
+strongest ensembles pair accuracy with low-redundancy members (Grok 4 contributes most because
+its predictions are least correlated with the rest — complementary errors). The relevance to a
+judge panel is directional: forecasting can *prove* diversity causes better accuracy because
+predictions resolve against truth, whereas pure LLM-judge evaluation is observational and can
+only *observe* correlation. (Their "diversity" is Jensen–Shannon divergence between output
+distributions, a different quantity from the φ̄/κ this article measures — so take the backing
+as qualitative, not a number to chain to n_eff.) The axis worth diversifying is the one carrying
+genuine independence; the forecasting world has the resolved outcomes to confirm it pays.
 
 ## The effective number of judges
 
