@@ -284,6 +284,56 @@ Two things keep this from being an endorsement of correlated panels. First, even
 
 And if the shared signal is reliably *right* — this is the Ross/Lo point (arXiv 2609.04373) — then judges agreeing is efficiency, not fragility. Conceded, fully. That's why the thesis is scoped to the miscalibrated-on-hard-items regime. When the panel is right, its agreement is free money. The problem is that agreement looks identical whether the panel is right or collectively fooled, and you can't tell which from the agreement alone.
 
+## Production is a diversity amplifier in reverse
+
+There's a gap between where you measure n_eff and where it bites, and it runs in the
+direction that flatters you. You validate a panel the way everyone validates a panel: in
+free-form chat, judges writing out verdicts in prose. You *deploy* it behind a structured
+JSON API, because that's how software consumes a model — a schema, a field to fill, nothing
+else. Those are not the same surface, and the switch is not cosmetic. Structured output
+measurably collapses the diversity of what a model will say.
+
+Tapan Parikh measured exactly this collapse ("Structured Output Collapses Answer Diversity
+Across 44 Language Models," arXiv 2607.18476, 2026). On a simple "pick a word" task, moving
+from free-form chat to a plain *"reply with JSON only"* instruction pushed the modal-answer
+rate from 41% to 64% (p = 0.0002) and cut the number of distinct answers from 52 to 36.
+Field-mean answer-choice surprisal fell from 1.80 bits to 1.58 bits — a 0.22-bit loss of
+diversity. XML gave a similar effect (p = 0.002). And this is the lower bound on the
+mechanism, not the upper: no schema enforcement and no constrained decoding were used. Just
+the *instruction* to answer in JSON was enough to homogenize the models. Add grammar-constrained
+decoding on top and you would expect the collapse to deepen, not ease.
+
+Parikh draws the deployment conclusion himself, and I'll quote him because the bridge is his,
+not mine: "structured output is how software consumes language models; that surface is served
+by a measurably more homogeneous model than the chat surface on which models are evaluated,
+compared, and chosen." You evaluate the chatty model and ship the homogeneous one.
+
+Now the step that is *mine*, flagged as such because it is the load-bearing inference of this
+whole section. Parikh measures answer-choice diversity on open-ended *naming* tasks. He does
+**not** measure judge agreement, judge error-correlation, or n_eff on anything. The bridge from
+"structured output lowers lexical diversity" to "structured output raises judge *error*
+correlation and lowers n_eff on evaluation tasks" is my inference — it is not a measurement, and
+Parikh's numbers do not demonstrate it. It is plausible on the mechanism this article has been
+building: if two judges have converged onto nearly the same latent view of a good answer, and you
+then narrow the channel they answer through — fewer distinct responses admissible, the modal
+response more dominant — you are stripping out exactly the idiosyncratic variation that let their
+errors *not* coincide. A narrower output surface is a smaller space in which to disagree. But
+plausible is not proven. Nobody has run the panel: same judges, same items, measure φ̄ in chat
+and again under the deployment schema. Until someone does, treat this as a directional claim —
+production n_eff ≤ benchmark n_eff — not a figure.
+
+And do not reach for arithmetic to close the gap. Parikh's 0.22-bit surprisal drop is a lexical
+diversity measurement on a naming task; Kohli's n_eff ≈ 2.18 is a Kish effective-n on judge error
+correlation. They are different estimands from different studies, and multiplying or chaining them
+would manufacture a number neither study supports. The honest statement has no product in it: the
+n_eff you measured in chat is an *over*-estimate of the n_eff you're running in production, and you
+don't know by how much.
+
+The practical takeaway is a one-line fix to the recipe later in this piece: **measure n_eff under
+your deployment format.** Same JSON schema, same temperature, same decoding settings, same
+constrained-generation backend — not in the chat playground where the model is at its most
+diverse. The playground gives you the panel's best face. Your users get the other one.
+
 ## Three objections I have to meet head-on
 
 **"More agents is all you need."** There's a well-known result (arXiv 2402.05120) that resampling *one* model many times and voting gives you real gains. True — and not a counterexample. Resampling one model draws near-i.i.d. samples *by construction*; the independence is manufactured by the sampling process. Cross-*model* panels are the opposite case: they don't get that independence, precisely because the models share the training specification the resampling trick doesn't have to worry about. Same voting math, opposite independence structure. The i.i.d. case is the one where the panel really is nine; the cross-model case is the one where it's two.
