@@ -468,3 +468,59 @@ So add the column. Run the Kish check from "Compute it yourself" on your panel a
 One measurement note while you're at it. The "Why not κ" worked example above showed the identity κ = q·φ (Rao & Callison-Burch) with concrete numbers; the same point applies at scale. When your pass/fail split is skewed — and gatekeeping splits usually are, most things pass — that q factor drags κ down relative to φ, so κ *understates* the agreement structure you actually have. Report φ, not just κ, or you'll flatter yourself about how independent the panel is.
 
 The thing to sit with: your LLM passes the tests and can still fail the audit. Calibration and independence are different properties, and every guide in the field checks the first and none check the second. You've been auditing whether each judge is honest. You haven't been auditing whether you have as many of them as you're paying for. Add the column.
+
+## For the compliance officer: n_eff as an audit certificate
+
+Everything above is written for the engineer building the panel. There's a second reader who
+should care more, and usually hears about this last: the person who has to *document* that the
+panel is fit for purpose. If an LLM-judge panel gates a high-risk system, that panel is not a
+developer convenience — it is part of the measurement apparatus a regulator now expects you to
+describe, and the description currently has a hole in it.
+
+The obligations are concrete. Under the EU AI Act (Regulation (EU) 2024/1689), a provider of a
+high-risk system must pass a conformity assessment before placing it on the market (Article 43),
+run a quality management system across the lifecycle (Article 17), and operate post-market
+monitoring once it ships (Article 72). None of these name a number; all three ask the same thing
+of your evaluation pipeline — *show that it measures what you claim it measures, and keep
+showing it.* ISO/IEC 42001:2023, the first AI management-system standard, and the NIST AI Risk
+Management Framework (NIST AI 100-1, January 2023), with its Govern / Map / Measure / Manage
+functions, ask it in different vocabulary but the same spirit: the evaluation that gates risk is
+itself a control you have to characterize. And as of 15 October 2026 this has teeth in Europe —
+EN 18286:2026, "AI — Quality management system for EU AI Act regulatory purposes," was published
+in the OJEU as the first harmonised standard cited under the Act. Be precise about its reach: it
+grants a presumption of conformity for the Article 17 QMS requirements only, not for the Act as a
+whole. It raises the bar on documenting your quality system; it does not discharge the rest.
+
+Here is where the panel becomes an audit problem. A team writes, truthfully, "quality is gated by
+a five-judge LLM panel." On paper that reads as five independent checks — robust, defensible,
+exactly the kind of redundancy an assessor likes to see. But if those five judges co-fail, the
+effective number of independent checks may be one or two, and the artifact silently overstates
+the reliability of the control. The document is not false — there really are five judges — but it
+is *uninformative about the thing the assessor cares about*, which is how many genuinely
+independent reads the panel performs. Agreement among the five, the number a team is tempted to
+report as evidence of rigour, is precisely the number that hides the deficit: on the hard items,
+consensus is the symptom, not the proof.
+
+n_eff closes that gap, and it closes it in exactly the register an auditor works in — a single
+number you can put on a control and check. It is the honest count of independent checks the panel
+actually performs. None of the regimes above *require* you to report it; none of them name it, and
+I won't pretend otherwise. What they require is measurement evidence — that your quality control
+is characterized, monitored, and not silently degrading — and n_eff is precisely the kind of
+evidence they ask for, sitting unmeasured in a place no platform currently instruments.
+
+Report the pair, not the single number. As the dashboard section argued, the auditable artifact is
+(p, φ̄) together — how well the panel performs and how correlated its failures are — or the n_eff
+the two imply. The worked example earlier in this piece shows the shape of what that looks like: a
+five-judge panel whose mean pairwise co-failure φ̄ ≈ 0.325 behaves like n_eff ≈ 2.17 — two and a
+bit independent checks, not five. (Treat any specific low figure you might imagine for your own
+panel — a five-judge panel landing at n_eff ≈ 1.3, say — as illustrative until you have measured
+your own φ̄; the whole point is that the number is computed, not assumed.) An assessor can read
+that pair and know what the control is worth. "Five judges" alone tells them nothing, and now that
+EN 18286 has made the quality-management documentation load-bearing, "nothing" is a worse place to
+be standing than it was a year ago.
+
+The thing to leave with: the drift-monitoring obligation and the audit-certificate framing are the
+same instrument pointed at two readers. The engineer watches n_eff to know when the panel is
+quietly converging. The compliance officer reports it to show the control is characterized and
+still holds. One gauge, one number, two reasons to have built it — and it is, still, the column
+nobody adds.
